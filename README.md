@@ -115,8 +115,21 @@ Or: `python3 -m http.server` and navigate to `/demo/index.html`.
 | `dist/mycelium-editor.cjs.js` | CJS | CommonJS for Node consumers |
 | `dist/preview-runtime.es.js` | ESM | Math-copy module (standalone) |
 | `dist/mycelium-editor.css` | CSS | Editor chrome CSS |
+| `dist/crdt.es.js` | ESM | Offline CRDT companion bundle (yjs + y-protocols + lib0) for y-websocket-style collab — produced by `npm run build:crdt` |
 
 All dependencies are bundled. No CDN required at runtime.
+
+### CRDT companion (`dist/crdt.es.js`)
+
+Consumers that want real-time collaboration without a CDN can import the companion bundle to get a single shared yjs instance alongside the editor. Produced separately from the main build to avoid module-identity conflicts:
+
+```bash
+npm run build:crdt   # produces dist/crdt.es.js
+# or as part of the full build:
+npm run build        # vite build + tsc declarations + crdt bundle
+```
+
+See `src/crdt-companion.ts` for the exported symbols (`Y`, `syncProtocol`, `awarenessProtocol`, `encoding`, `decoding`, `Doc`, `Text`).
 
 ## Part of the [mycelium](https://github.com/hibiki-automatic) ecosystem
 
