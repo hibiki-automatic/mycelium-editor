@@ -9,6 +9,8 @@ export interface ScrollInfo {
 export interface MyceliumEditorOptions {
   value?: string
   yText?: Y.Text
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  awareness?: any  // y-protocols Awareness instance; typed 'any' to avoid a hard peer-dep
   readOnly?: boolean
   theme?: 'light' | 'dark'
   onChange?: (value: string) => void

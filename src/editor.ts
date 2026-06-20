@@ -64,7 +64,7 @@ export function createEditorView(
     void (async () => {
       try {
         const { yCollab } = await import('y-codemirror.next')
-        const collab = yCollab(yText, null)
+        const collab = yCollab(yText, options.awareness ?? null)
         view.dispatch({ effects: StateEffect.appendConfig.of(collab) })
       } catch (e) {
         console.warn('y-codemirror.next not available:', e)
