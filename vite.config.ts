@@ -16,7 +16,11 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: [],
+      // Externalize yjs so both mycelium-editor.es.js and crdt.es.js resolve
+      // to the SAME yjs instance at runtime (via importmap → yjs.es.js).
+      // Without this, each bundle inlines its own yjs copy and Y.Text instanceof
+      // checks in y-codemirror.next fail across bundle boundaries.
+      external: ['yjs'],
     },
     cssCodeSplit: false,
     sourcemap: true,

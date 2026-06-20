@@ -115,18 +115,101 @@ Or: `python3 -m http.server` and navigate to `/demo/index.html`.
 | `dist/mycelium-editor.cjs.js` | CJS | CommonJS for Node consumers |
 | `dist/preview-runtime.es.js` | ESM | Math-copy module (standalone) |
 | `dist/mycelium-editor.css` | CSS | Editor chrome CSS |
-| `dist/crdt.es.js` | ESM | Offline CRDT companion bundle (yjs + y-protocols + lib0) for y-websocket-style collab — produced by `npm run build:crdt` |
+| `dist/yjs.es.js` | ESM | Standalone yjs bundle (yjs + lib0, fully self-contained) — the shared module identity anchor |
+| `dist/crdt.es.js` | ESM | CRDT companion: y-protocols/sync + y-protocols/awareness + lib0 encoding/decoding; externalizes yjs |
 
-All dependencies are bundled. No CDN required at runtime.
+All dependencies are bundled (except `yjs`, which is shared via importmap). No CDN required at runtime.
+
+## Consuming with CRDT
+
+This is the **exact wiring contract** for any consumer that wants true char-level Y.Text collaboration (e.g. md-preview).
+
+### Why it works
+
+`mycelium-editor.es.js` and `crdt.es.js` both externalize `'yjs'` (bare specifier). At runtime the consumer provides an [importmap](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script/type/importmap) that maps `'yjs'` to `dist/yjs.es.js`. The browser deduplicates by URL, so every `import * as Y from 'yjs'` across all modules resolves to the **same cached instance**. Y.Doc / Y.Text instanceof checks in `y-codemirror.next` pass correctly, enabling real char-level CRDT instead of last-write-wins.
+
+### Files to serve
+
+Serve these three files from the **same path prefix** (e.g. `/editor-bundle/`):
+
+| File | Serve as |
+|------|----------|
+| `dist/yjs.es.js` | `/editor-bundle/yjs.es.js` |
+| `dist/mycelium-editor.es.js` | `/editor-bundle/mycelium-editor.es.js` |
+| `dist/crdt.es.js` | `/editor-bundle/crdt.es.js` |
+
+Also serve the vite-generated chunk files alongside (`dist/index-*.js`).
+
+### Importmap
+
+Place this **before** any `<script type="module">` that imports the editor:
+
+```html
+<script type="importmap">
+{
+  "imports": {
+    "yjs": "/editor-bundle/yjs.es.js"
+  }
+}
+</script>
+```
+
+### Collab API
+
+```javascript
+import { createMyceliumEditor } from '/editor-bundle/mycelium-editor.es.js'
+// Y must come from the shared yjs — import via the importmap-resolved specifier
+import * as Y from 'yjs'
+
+const ydoc = new Y.Doc()
+const ytext = ydoc.getText('content')
+
+const editor = createMyceliumEditor(document.getElementById('editor'), {
+  yText: ytext,   // Y.Text CRDT mode — true char-level binding via y-codemirror.next
+  theme: 'dark',
+})
+```
+
+The `yText` option wires `yCollab(ytext, null)` via `y-codemirror.next`. Concurrent edits by different peers are merged character-by-character (CRDT), not last-write-wins.
+
+### Provider wiring (y-websocket-compatible transport)
+
+Use `dist/crdt.es.js` for the sync/awareness wire protocol:
+
+```javascript
+import { Y, syncProtocol, awarenessProtocol, encoding, decoding } from '/editor-bundle/crdt.es.js'
+// Y here is re-exported from the same shared yjs instance (via importmap)
+
+// Example: wire to a WebSocket speaking the y-websocket protocol
+const ws = new WebSocket('/collab')
+ws.binaryType = 'arraybuffer'
+
+const awareness = new awarenessProtocol.Awareness(ydoc)
+
+ws.onmessage = (event) => {
+  const data = new Uint8Array(event.data)
+  const decoder = decoding.createDecoder(data)
+  const messageType = decoding.readVarUint(decoder)
+  if (messageType === 0) {
+    syncProtocol.readSyncMessage(decoder, encoding.createEncoder(), ydoc, null)
+  } else if (messageType === 1) {
+    awarenessProtocol.applyAwarenessUpdate(awareness, decoding.readVarUint8Array(decoder), null)
+  }
+}
+
+// Send initial sync step 1
+const encoder = encoding.createEncoder()
+encoding.writeVarUint(encoder, 0)
+syncProtocol.writeSyncStep1(encoder, ydoc)
+ws.send(encoding.toUint8Array(encoder))
+```
 
 ### CRDT companion (`dist/crdt.es.js`)
-
-Consumers that want real-time collaboration without a CDN can import the companion bundle to get a single shared yjs instance alongside the editor. Produced separately from the main build to avoid module-identity conflicts:
 
 ```bash
 npm run build:crdt   # produces dist/crdt.es.js
 # or as part of the full build:
-npm run build        # vite build + tsc declarations + crdt bundle
+npm run build        # vite build + tsc declarations + yjs.es.js + crdt.es.js
 ```
 
 See `src/crdt-companion.ts` for the exported symbols (`Y`, `syncProtocol`, `awarenessProtocol`, `encoding`, `decoding`, `Doc`, `Text`).

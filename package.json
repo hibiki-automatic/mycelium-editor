@@ -23,7 +23,8 @@
     "src"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly --declarationDir dist && node build-crdt-bundle.mjs",
+    "build": "vite build && tsc --emitDeclarationOnly --declarationDir dist && node build-yjs-bundle.mjs && node build-crdt-bundle.mjs",
+    "build:yjs": "node build-yjs-bundle.mjs",
     "build:crdt": "node build-crdt-bundle.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
