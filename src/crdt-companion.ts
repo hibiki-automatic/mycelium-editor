@@ -1,40 +1,24 @@
 /**
- * CRDT companion for md-preview's offline editor.
+ * CRDT companion for offline collaborative editing.
  *
- * Exports exactly what the CollabProvider needs from a single bundled module,
- * ensuring the yjs module identity is shared with y-codemirror.next (which also
- * imports yjs from the same node_modules tree via mycelium-editor's bundle).
+ * Exports exactly what a CollabProvider needs (yjs + y-protocols sync/awareness +
+ * lib0 encoding/decoding) from a single module, for speaking the y-websocket wire
+ * protocol over a consumer-owned transport (e.g. md-preview's /collab WebSocket).
  *
- * NOTE: y-codemirror.next is bundled inside mycelium-editor.es.js (index-CUCuSPF_.js).
- * For module identity to work the Y.Doc / Y.Text we pass to createMyceliumEditor
- * MUST come from THIS bundle (same resolved module path), not from a separate yjs load.
- * Both this file and the mycelium-editor vite build resolve yjs from the same
- * node_modules/yjs, so in a bundled context they share the same code. When served
- * from /editor-bundle/crdt.es.js and /editor-bundle/mycelium-editor.es.js (same origin),
- * the browser caches the yjs code from the first import and reuses it for both.
+ * MODULE IDENTITY — the key to true char-level CRDT:
+ * Both this bundle (crdt.es.js) and the editor bundle (mycelium-editor.es.js)
+ * declare `yjs` as EXTERNAL (a bare `import * as Y from 'yjs'`). The consumer
+ * supplies an importmap mapping `'yjs'` → `/editor-bundle/yjs.es.js`, so the
+ * browser resolves every yjs import to ONE cached module instance. That makes the
+ * Y.Doc / Y.Text / Y.AbstractType instanceof checks inside y-codemirror.next pass,
+ * so a Y.Text constructed here (or by the consumer) binds correctly via yCollab.
  *
- * Actually: vite bundles ALL deps inline (external: []), so both bundles will have
- * their own copy of yjs code. This means Y.Doc from crdt.es.js and Y.Doc in
- * mycelium-editor's bundle are DIFFERENT classes. The y-codemirror.next binding
- * INSIDE the mycelium-editor bundle does instanceof checks against its bundled yjs.
- * Passing a Y.Text from crdt.es.js's yjs would FAIL those checks.
+ * Result: concurrent edits merge character-by-character (true CRDT), NOT
+ * last-write-wins document sync. The Y.Text passed to createMyceliumEditor's
+ * `yText` option drives yCollab directly.
  *
- * RESOLUTION: mycelium-editor's index-CUCuSPF_.js exports enough symbols for us.
- * We need to get Y.Doc from the SAME bundle. Since it doesn't export Y.Doc directly,
- * the only clean solution is: DON'T pass yText to createMyceliumEditor.
- * Instead, createMyceliumEditor creates its own internal Y.Doc, and we provide
- * CRDT via the onChange/setValue API (document-level sync, not fine-grained CRDT).
- * The CollabProvider manages the ydoc, syncs with server, and calls editor.setValue()
- * on remote changes + listens to onChange for local changes.
- *
- * This is "last-write-wins document sync" — not the fine-grained Y.Text binding.
- * For the Y.Text binding to work properly, we'd need mycelium-editor to export
- * Y.Doc or for a future vite build to externalize yjs (shared across bundles).
- * That is logged in MORNING-NOTES as the remaining work for CRDT Y.Text binding.
- *
- * THIS file therefore only exports the CollabProvider class with Y.Doc/Y.Text
- * bundled from this package's own yjs copy (for the sync wire protocol with the
- * server). The Y.Text "content" is linked to onChange/setValue, not yCollab.
+ * See README → "Consuming with CRDT" for the exact files/importmap/API contract.
+ * The convergence guarantee is proven by src/__tests__/crdt-convergence.test.ts.
  */
 
 import * as Y from 'yjs';
