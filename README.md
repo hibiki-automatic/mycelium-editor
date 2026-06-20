@@ -1,5 +1,7 @@
 # mycelium-editor
 
+[![CI](https://github.com/hibiki-automatic/mycelium-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/hibiki-automatic/mycelium-editor/actions/workflows/ci.yml)
+
 Reusable **EasyMDE-style** markdown editor built on **CodeMirror 6** — framework-agnostic, offline-first, CRDT-ready.
 
 Part of the [mycelium ecosystem](https://github.com/hibiki-automatic).
@@ -115,3 +117,15 @@ Or: `python3 -m http.server` and navigate to `/demo/index.html`.
 | `dist/mycelium-editor.css` | CSS | Editor chrome CSS |
 
 All dependencies are bundled. No CDN required at runtime.
+
+## Part of the [mycelium](https://github.com/hibiki-automatic) ecosystem
+
+| Repo | Description |
+|------|-------------|
+| [md-render](https://github.com/hibiki-automatic/md-render) | Markdown → HTML renderer (Rust crate) |
+| [doc-core](https://github.com/hibiki-automatic/doc-core) | Web-free CRDT / document kernel |
+| [fs-confine](https://github.com/hibiki-automatic/fs-confine) | Web-free filesystem confinement kernel |
+| [md-preview](https://github.com/hibiki-automatic/md-preview) | Collaborative Markdown preview daemon |
+| [mycelium-editor](https://github.com/hibiki-automatic/mycelium-editor) | CodeMirror 6 editor component (this repo) |
+| [nvim-md-preview](https://github.com/hibiki-automatic/nvim-md-preview) | Neovim live-preview plugin |
+| [md-hub](https://github.com/hibiki-automatic/research-thin-server) | Research document hub (Axum server) |
