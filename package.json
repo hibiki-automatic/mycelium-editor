@@ -1,0 +1,47 @@
+{
+  "name": "@hibiki-automatic/mycelium-editor",
+  "version": "0.1.0",
+  "description": "Reusable EasyMDE-style CodeMirror 6 markdown editor (Y.Text CRDT, in-source styling, scroll-sync). Part of the mycelium ecosystem.",
+  "type": "module",
+  "main": "dist/mycelium-editor.cjs.js",
+  "module": "dist/mycelium-editor.es.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "dist/index.d.ts",
+      "import": "dist/mycelium-editor.es.js",
+      "require": "dist/mycelium-editor.cjs.js"
+    },
+    "./preview-runtime": {
+      "import": "dist/preview-runtime.es.js",
+      "types": "dist/preview-runtime.d.ts"
+    },
+    "./theme.css": "dist/mycelium-editor.css"
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly --declarationDir dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.3.2",
+    "@codemirror/language": "^6.10.9",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5",
+    "@lezer/highlight": "^1.2.3",
+    "@lezer/markdown": "^1.4.1",
+    "codemirror": "^6.0.1",
+    "y-codemirror.next": "^0.3.5",
+    "yjs": "^13.6.27"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.3"
+  }
+}

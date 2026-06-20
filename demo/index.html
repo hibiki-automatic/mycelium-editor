@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mycelium Editor Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; height: 100vh; display: flex; flex-direction: column; }
+    header {
+      padding: 10px 20px;
+      background: #1a1a2e;
+      color: #cdd6f4;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header span { color: #6c7086; }
+    .pane-container {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .pane {
+      flex: 1;
+      overflow: auto;
+      position: relative;
+    }
+    .pane + .pane {
+      border-left: 1px solid #e0e0e8;
+    }
+    #editor-pane {
+      display: flex;
+      flex-direction: column;
+    }
+    #editor-mount {
+      flex: 1;
+      overflow: auto;
+    }
+    #editor-mount .cm-editor {
+      height: 100%;
+    }
+    #preview-pane {
+      overflow: auto;
+      padding: 0;
+    }
+    #preview-content {
+      padding: 16px;
+    }
+    /* Inline decoration styles */
+    .cm-md-h1 { font-size: 1.6em; font-weight: bold; color: #1a1a2e; }
+    .cm-md-h2 { font-size: 1.4em; font-weight: bold; color: #1a1a2e; }
+    .cm-md-h3 { font-size: 1.2em; font-weight: bold; color: #1a1a2e; }
+    .cm-md-h4 { font-size: 1.1em; font-weight: bold; color: #1a1a2e; }
+    .cm-md-h5, .cm-md-h6 { font-weight: bold; color: #1a1a2e; }
+    .cm-md-strong { font-weight: bold; }
+    .cm-md-em { font-style: italic; color: #555577; }
+    .cm-md-code {
+      font-family: 'Fira Code', monospace;
+      color: #d63031;
+      background: #f4f4f8;
+      padding: 0.1em 0.25em;
+      border-radius: 3px;
+    }
+    .cm-md-link { color: #0066cc; text-decoration: underline; }
+    .cm-md-strike { text-decoration: line-through; }
+    .cm-md-blockquote { color: #666688; border-left: 3px solid #c0c0d8; padding-left: 8px; }
+    .cm-md-fence-marker { font-family: monospace; color: #555555; background: #f4f4f8; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍄 Mycelium Editor</h1>
+    <span>EasyMDE-style · CodeMirror 6 · Y.Text CRDT · Scroll-sync</span>
+  </header>
+  <div class="pane-container">
+    <div class="pane" id="editor-pane">
+      <div id="editor-mount"></div>
+    </div>
+    <div class="pane" id="preview-pane">
+      <div id="preview-content" class="mycelium-preview"></div>
+    </div>
+  </div>
+
+  <!-- marked for demo preview only — not part of the bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- KaTeX for demo math rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+  <script type="module">
+    import { createMyceliumEditor, myceliumCss, syncEditorPreviewScroll, enableMathCopyAsTex } from '../dist/mycelium-editor.es.js'
+
+    // Inject preview CSS
+    const styleEl = document.createElement('style')
+    styleEl.textContent = myceliumCss
+    document.head.appendChild(styleEl)
+
+    const INITIAL = `# Welcome to Mycelium Editor
+
+This is an **EasyMDE-style** editor built on **CodeMirror 6**.
+
+## Features
+
+- Markdown markers stay *visible* — \`#\`, \`**bold**\`, \`[text](url)\`
+- Decorations applied **in place** without mutating text
+- Y.Text CRDT support for collaborative editing
+- Scroll-sync between editor and preview
+
+## Code Example
+
+Inline \`code\` is styled. Fenced blocks too:
+
+\`\`\`typescript
+function greet(name: string): string {
+  return \`Hello, \${name}!\`
+}
+\`\`\`
+
+## Math (display-only in editor; rendered in preview)
+
+Inline: $E = mc^2$
+
+Display:
+$$\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}$$
+
+## Links
+
+Visit [GitHub](https://github.com/hibiki-automatic/mycelium-editor) for the source.
+
+---
+
+*Start typing to see live preview and scroll-sync in action.*
+`
+
+    const editorMount = document.getElementById('editor-mount')
+    const previewEl = document.getElementById('preview-content')
+
+    function renderPreview(md) {
+      // Basic marked render
+      let html = marked.parse(md)
+
+      // Inject into preview
+      previewEl.innerHTML = html
+
+      // Render KaTeX math if available
+      if (window.katex && window.renderMathInElement) {
+        window.renderMathInElement(previewEl, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+          ],
+        })
+      }
+    }
+
+    const editor = createMyceliumEditor(editorMount, {
+      value: INITIAL,
+      theme: 'light',
+      onChange: (value) => renderPreview(value),
+    })
+
+    // Initial render
+    renderPreview(INITIAL)
+
+    // Scroll sync: ratio-based (no line-offset mapping needed for demo)
+    const unsync = syncEditorPreviewScroll(editor, previewEl, (_line) => -1)
+
+    // Math copy handler
+    const mathCleanup = enableMathCopyAsTex(previewEl)
+
+    // Cleanup on unload (good practice)
+    window.addEventListener('unload', () => {
+      unsync()
+      mathCleanup()
+      editor.destroy()
+    })
+  </script>
+</body>
+</html>
