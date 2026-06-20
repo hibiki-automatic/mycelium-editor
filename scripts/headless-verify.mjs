@@ -9,7 +9,7 @@ import { readFileSync, existsSync } from 'fs'
 import { join, extname } from 'path'
 import { fileURLToPath } from 'url'
 
-const __dirname = fileURLToPath(new URL('.', import.meta.url))
+const __dirname = fileURLToPath(new URL('..', import.meta.url))
 
 // --- Static server ---
 const MIME = {

@@ -91,6 +91,11 @@
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
+  <!-- importmap: resolve bare 'yjs' to the shared dist bundle (required since yjs is now external) -->
+  <script type="importmap">
+  {"imports":{"yjs":"../dist/yjs.es.js"}}
+  </script>
+
   <script type="module">
     import { createMyceliumEditor, myceliumCss, syncEditorPreviewScroll, enableMathCopyAsTex } from '../dist/mycelium-editor.es.js'
 
