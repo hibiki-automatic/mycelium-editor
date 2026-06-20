@@ -89,6 +89,7 @@
   <!-- KaTeX for demo math rendering -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
 
   <script type="module">
     import { createMyceliumEditor, myceliumCss, syncEditorPreviewScroll, enableMathCopyAsTex } from '../dist/mycelium-editor.es.js'
@@ -137,6 +138,8 @@ Visit [GitHub](https://github.com/hibiki-automatic/mycelium-editor) for the sour
 
     const editorMount = document.getElementById('editor-mount')
     const previewEl = document.getElementById('preview-content')
+    // #preview-pane is the scrolling container; #preview-content is the rendered content inside
+    const previewPaneEl = document.getElementById('preview-pane')
 
     function renderPreview(md) {
       // Basic marked render
@@ -165,13 +168,13 @@ Visit [GitHub](https://github.com/hibiki-automatic/mycelium-editor) for the sour
     // Initial render
     renderPreview(INITIAL)
 
-    // Scroll sync: ratio-based (no line-offset mapping needed for demo)
-    const unsync = syncEditorPreviewScroll(editor, previewEl, (_line) => -1)
+    // Scroll sync: pass the scrollable pane (overflow:auto), not the content div
+    const unsync = syncEditorPreviewScroll(editor, previewPaneEl, (_line) => -1)
 
-    // Math copy handler
+    // Math copy handler: attached to the content element that has the rendered HTML
     const mathCleanup = enableMathCopyAsTex(previewEl)
 
-    // Cleanup on unload (good practice)
+    // Cleanup on unload
     window.addEventListener('unload', () => {
       unsync()
       mathCleanup()
