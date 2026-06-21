@@ -8,10 +8,10 @@ export { myceliumCss, myceliumDarkCss } from '@hibiki-automatic/mycelium-theme'
 
 function makeHighlightStyle(tk: typeof tokens) {
   return HighlightStyle.define([
-    { tag: t.heading1, fontWeight: 'bold', fontSize: '1.6em', color: tk.heading },
-    { tag: t.heading2, fontWeight: 'bold', fontSize: '1.4em', color: tk.heading },
-    { tag: t.heading3, fontWeight: 'bold', fontSize: '1.2em', color: tk.heading },
-    { tag: t.heading4, fontWeight: 'bold', fontSize: '1.1em', color: tk.heading },
+    { tag: t.heading1, fontWeight: 'bold', fontSize: '2em', color: tk.heading },
+    { tag: t.heading2, fontWeight: 'bold', fontSize: '1.5em', color: tk.heading },
+    { tag: t.heading3, fontWeight: 'bold', fontSize: '1.25em', color: tk.heading },
+    { tag: t.heading4, fontWeight: 'bold', fontSize: '1em', color: tk.heading },
     { tag: t.heading5, fontWeight: 'bold', color: tk.heading },
     { tag: t.heading6, fontWeight: 'bold', color: tk.heading },
     { tag: t.strong, fontWeight: 'bold', color: tk.strong },
@@ -40,7 +40,7 @@ function makeEditorTheme(tk: typeof tokens, dark: boolean) {
       '&': {
         color: tk.fg,
         backgroundColor: tk.bg,
-        fontFamily: "'Georgia', 'Times New Roman', serif",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif",
         fontSize: '16px',
         height: '100%',
       },
@@ -64,14 +64,14 @@ function makeEditorTheme(tk: typeof tokens, dark: boolean) {
       '&.cm-focused': { outline: `2px solid ${tk.link}` },
       '.cm-code-block': {
         backgroundColor: tk.codeBg,
-        fontFamily: "'Fira Code', 'Cascadia Code', monospace",
+        fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace",
         display: 'block',
         padding: '2px 4px',
         borderRadius: '3px',
       },
       '.cm-fenced-code': {
         backgroundColor: tk.codeBg,
-        fontFamily: "'Fira Code', 'Cascadia Code', monospace",
+        fontFamily: "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace",
         display: 'block',
       },
     },
