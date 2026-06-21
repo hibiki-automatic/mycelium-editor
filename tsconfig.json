@@ -13,7 +13,10 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@hibiki-automatic/mycelium-theme": ["../mycelium-theme/src/index.ts"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "demo"]

@@ -31,6 +31,7 @@
     "dev": "vite"
   },
   "dependencies": {
+    "@hibiki-automatic/mycelium-theme": "file:../mycelium-theme",
     "@codemirror/lang-markdown": "^6.3.2",
     "@codemirror/language": "^6.10.9",
     "@codemirror/state": "^6.5.2",
